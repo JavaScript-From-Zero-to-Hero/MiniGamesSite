@@ -1,32 +1,67 @@
 'use strict';
 
-function showModalWindow() {
-    modalWindow.classList.remove('hidden');
-    overlay.classList.remove('hidden');
+
+function changePlayer() {
+    players[currentPlayerNumber].classList.remove('player--active');
+    currentPlayerNumber = currentPlayerNumber === 0 ? 1 : 0;
+    players[currentPlayerNumber].classList.add('player--active');
 }
 
-function closeModalWindow() {
-    modalWindow.classList.add('hidden');
-    overlay.classList.add('hidden');
+function resetCurrentScore() {
+    playersCurrentScores[0] = 0;
+    playersCurrentScores[1] = 0;
+    playerCurrentScoreboard[currentPlayerNumber].textContent = playersCurrentScores[currentPlayerNumber];
+}
+
+function recordVictory() {
+    players[currentPlayerNumber].classList.remove('player--active');
+    players[currentPlayerNumber].classList.add('player--winner');
+        
+    btnRoll.disabled = true;
+    btnHold.disabled = true;
 }
 
 
-const modalWindow = document.querySelector('.modal-window');
-const overlay = document.querySelector('.overlay');
-const btnCloseModalWindow = document.querySelector('.close-modal-window');
-const btnShowModalWindow = document.querySelectorAll('.show-modal-window');
+const btnRoll = document.querySelector('.btn--roll');
+const dice = document.querySelector('.dice');
+const playerCurrentScoreboard = document.querySelectorAll('.current-score');
+const btnHold = document.querySelector('.btn--hold');
+const playerScoreboard = document.querySelectorAll('.score');
+const btnNewGame = document.querySelector('.btn--new');
+const players = document.querySelectorAll('.player');
 
 
-for (let i = 0; i < btnShowModalWindow.length; i++) {
-    btnShowModalWindow[i].addEventListener('click', showModalWindow);
-}
+let playersCurrentScores = [0, 0];
+let playersScores = [0, 0];
+let currentPlayerNumber = 0;
 
-btnCloseModalWindow.addEventListener('click', closeModalWindow);
+btnRoll.addEventListener('click', () => {
+    let randomNumber = Math.trunc(Math.random() * 6) + 1;
 
-overlay.addEventListener('click', closeModalWindow);
+    dice.setAttribute('src', `./sprites/dice${randomNumber}.png`);
 
-document.addEventListener('keydown', (event) => {
-    if (event.key === 'Escape' && !modalWindow.classList.contains('hidden')) {
-        closeModalWindow()
+    if (randomNumber !== 1) {
+        playersCurrentScores[currentPlayerNumber] += randomNumber;
+        playerCurrentScoreboard[currentPlayerNumber].textContent = playersCurrentScores[currentPlayerNumber];
+    } else {
+        resetCurrentScore();
+        changePlayer();
     }
 });
+
+btnHold.addEventListener('click', () => {
+    playersScores[currentPlayerNumber] += playersCurrentScores[currentPlayerNumber];
+    playerScoreboard[currentPlayerNumber].textContent = playersScores[currentPlayerNumber];
+
+    resetCurrentScore();
+
+    if (playerScoreboard[currentPlayerNumber].textContent >= 100) {
+        recordVictory();
+    } else {
+        changePlayer();
+    }
+});
+
+btnNewGame.addEventListener('click', () => {
+    location.reload();
+})
